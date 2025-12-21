@@ -1,0 +1,2 @@
+session_id,start_time,end_time,duration_minutes,total_blinks,avg_blink_rate,avg_ear,min_ear,max_ear,fatigue_level,alerts_triggered,breaks_taken
+1,2025-11-27 12:46:25.988824,2025-11-27 12:46:25.991119,0.0,5,15.0,0.3,0.3,0.3,0,0,0

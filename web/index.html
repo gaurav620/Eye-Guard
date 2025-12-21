@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="AI-powered eye strain detection with real-time blink tracking">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Eyeguard">
+
+    <title>Eyeguard - Eye Health Monitor</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">👁️</div>
+                <div>
+                    <h1>Eyeguard</h1>
+                    <p>Eye Health Monitor</p>
+                </div>
+            </div>
+            <button class="header-btn" id="installBtn" style="display: none;">
+                📲 Install App
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Landing Section (shown when camera is off) -->
+        <section id="landingSection" class="landing-section">
+            <div class="landing-icon">👁️</div>
+            <h2 class="landing-title">Monitor Your Eye Health</h2>
+            <p class="landing-subtitle">
+                Click the button below to start real-time eye tracking.
+                We'll detect your blinks and help prevent eye strain.
+            </p>
+
+            <button id="startCameraBtn" class="btn btn-primary btn-lg">
+                <span class="btn-icon">📹</span>
+                Start Eye Tracking
+            </button>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👁️</div>
+                    <div class="feature-title">Blink Detection</div>
+                    <div class="feature-desc">Real-time tracking using AI</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Health Stats</div>
+                    <div class="feature-desc">Monitor your eye wellness</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <div class="feature-title">Break Reminders</div>
+                    <div class="feature-desc">20-20-20 rule alerts</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Works Offline</div>
+                    <div class="feature-desc">Install as an app</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tracking Section (shown when camera is on) -->
+        <section id="trackingSection" class="hidden">
+            <div class="camera-section">
+                <!-- Camera View -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📹 Live Eye Tracking</h3>
+                        <button id="stopCameraBtn" class="btn btn-danger">
+                            ⏹️ Stop Session
+                        </button>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="camera-container">
+                            <video id="videoElement" autoplay playsinline muted></video>
+                            <canvas id="canvasOverlay"></canvas>
+                            <div id="loadingOverlay" class="camera-placeholder">
+                                <div class="camera-placeholder-icon pulse">⏳</div>
+                                <h3>Loading AI Model...</h3>
+                                <p>Please wait while we initialize the eye tracker</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Panel -->
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-label">Session Duration</div>
+                        <div class="stat-value" id="sessionTime">00:00</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Total Blinks</div>
+                        <div class="stat-value" id="blinkCount">0</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Blink Rate</div>
+                        <div>
+                            <span class="stat-value" id="blinkRate">0</span>
+                            <span class="stat-unit">/min</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="blinkRateProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">Eye Aspect Ratio</div>
+                        <div class="stat-value" id="earValue">-</div>
+                    </div>
+
+                    <div id="healthStatus" class="health-status healthy">
+                        ✅ Eyes Healthy
+                    </div>
+
+                    <div class="card break-card">
+                        <div class="card-body">
+                            <div class="stat-label">Next Break In</div>
+                            <div class="break-timer" id="breakTimer">20:00</div>
+                            <p style="font-size: 0.875rem; color: #6366f1; margin-top: 0.5rem;">
+                                20-20-20 Rule
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage">Notification</span>
+    </div>
+
+    <!-- Install Banner -->
+    <div id="installBanner" class="install-banner">
+        <span>📲 Install Eyeguard for the best experience</span>
+        <button id="installBannerBtn">Install</button>
+    </div>
+
+    <!-- App JavaScript with ES Modules -->
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eyeguard - Complete Eye Care Solution</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .tab-active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-inactive {
+            background: transparent;
+            color: white;
+            opacity: 0.8;
+        }
+
+        .tab-inactive:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #videoCanvas {
+            border-radius: 1rem;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <div>
+                        <h1 class="text-3xl font-bold">Eyeguard</h1>
+                        <p class="text-sm opacity-90">Complete Eye Strain Detection & Care</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="px-4 py-2 bg-white bg-opacity-20 rounded-lg text-sm font-medium">
+                        👤 <span id="currentUser">User</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="mt-6 flex space-x-2">
+                <button onclick="switchTab('camera')" id="tab-camera"
+                    class="px-6 py-3 rounded-lg transition-all tab-active">
+                    📹 Live Tracking
+                </button>
+                <button onclick="switchTab('dashboard')" id="tab-dashboard"
+                    class="px-6 py-3 rounded-lg transition-all tab-inactive">
+                    📊 Dashboard
+                </button>
+                <button onclick="switchTab('reports')" id="tab-reports"
+                    class="px-6 py-3 rounded-lg transition-all tab-inactive">
+                    📄 Reports
+                </button>
+                <button onclick="switchTab('analytics')" id="tab-analytics"
+                    class="px-6 py-3 rounded-lg transition-all tab-inactive">
+                    📈 Analytics
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <!-- TAB 1: LIVE CAMERA TRACKING -->
+        <div id="content-camera" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Video Feed -->
+                <div class="lg:col-span-2">
+                    <div class="card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">Live Eye Tracking</h2>
+                            <button id="startBtn" onclick="startTracking()"
+                                class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-all shadow-md">
+                                ▶️ Start Session
+                            </button>
+                            <button id="stopBtn" onclick="stopTracking()"
+                                class="hidden px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition-all shadow-md">
+                                ⏹️ Stop Session
+                            </button>
+                        </div>
+                        <div class="relative bg-gray-900 rounded-lg overflow-hidden" style="min-height: 480px;">
+                            <video id="webcam" class="hidden" width="640" height="480"></video>
+                            <canvas id="videoCanvas" width="640" height="480"></canvas>
+                            <div id="cameraPlaceholder"
+                                class="absolute inset-0 flex items-center justify-center text-white text-lg">
+                                Click "Start Session" to begin tracking
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Stats -->
+                <div class="space-y-4">
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Real-Time Metrics</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm text-gray-600">Session Duration</span>
+                                    <span id="liveSessionTime" class="text-2xl font-bold text-purple-600">00:00</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm text-gray-600">Total Blinks</span>
+                                    <span id="liveBlinks" class="text-2xl font-bold text-blue-600">0</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm text-gray-600">Blink Rate</span>
+                                    <span id="liveBlinkRate" class="text-2xl font-bold text-green-600">0/min</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                    <div id="blinkRateBar" class="bg-green-500 h-2 rounded-full" style="width: 0%">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm text-gray-600">Eye Aspect Ratio</span>
+                                    <span id="liveEAR" class="text-2xl font-bold text-orange-600">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6 bg-blue-50">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-2">💡 20-20-20 Rule</h3>
+                        <p class="text-sm text-blue-700">Every 20 minutes, look at something 20 feet away for 20 seconds
+                        </p>
+                        <div class="mt-3">
+                            <div class="text-sm text-blue-600">Next break in:</div>
+                            <div id="nextBreak" class="text-2xl font-bold text-blue-800">20:00</div>
+                        </div>
+                    </div>
+
+                    <div id="alertBox" class="hidden card p-6 bg-yellow-50 border-2 border-yellow-400">
+                        <h3 class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Alert</h3>
+                        <p id="alertMessage" class="text-sm text-yellow-700"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: DASHBOARD -->
+        <div id="content-dashboard" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="card p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-gray-600 text-sm font-medium">Wellness Score</h3>
+                        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="wellnessScore">--</div>
+                    <div class="text-sm text-gray-500 mt-1" id="wellnessGrade">Loading...</div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-gray-600 text-sm font-medium">Total Sessions</h3>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="totalSessions">--</div>
+                    <div class="text-sm text-gray-500 mt-1">Last 7 days</div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-gray-600 text-sm font-medium">Screen Time</h3>
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="screenTime">--</div>
+                    <div class="text-sm text-gray-500 mt-1">Total hours</div>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-gray-600 text-sm font-medium">Avg Blink Rate</h3>
+                        <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="blinkRate">--</div>
+                    <div class="text-sm text-gray-500 mt-1">blinks/min</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Blink Rate Trend</h3>
+                    <canvas id="dashBlinkChart"></canvas>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Session Duration</h3>
+                    <canvas id="dashDurationChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: REPORTS -->
+        <div id="content-reports" class="tab-content hidden">
+            <div class="card p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">📄 Generate Reports</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <button onclick="generatePDFReport()" class="card p-6 hover:shadow-lg transition-all text-center">
+                        <div class="text-5xl mb-4">📊</div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">PDF Report</h3>
+                        <p class="text-sm text-gray-600">Professional report with charts and insights</p>
+                    </button>
+
+                    <button onclick="exportCSV()" class="card p-6 hover:shadow-lg transition-all text-center">
+                        <div class="text-5xl mb-4">📗</div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Export CSV</h3>
+                        <p class="text-sm text-gray-600">Download session data as CSV</p>
+                    </button>
+
+                    <button onclick="exportJSON()" class="card p-6 hover:shadow-lg transition-all text-center">
+                        <div class="text-5xl mb-4">📘</div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Export JSON</h3>
+                        <p class="text-sm text-gray-600">Download with analytics data</p>
+                    </button>
+                </div>
+
+                <div id="reportStatus" class="hidden mt-6 p-4 bg-green-50 border-2 border-green-400 rounded-lg">
+                    <p class="text-green-800 font-semibold"><span id="reportMessage"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: ANALYTICS -->
+        <div id="content-analytics" class="tab-content hidden">
+            <div class="card p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">📈 Analytics & Insights</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">Wellness Score Breakdown</h3>
+                        <canvas id="wellnessChartCanvas"></canvas>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-4">💡 Personalized Recommendations</h3>
+                        <div id="suggestions" class="space-y-3">
+                            <div class="text-center text-gray-400 py-8 pulse">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api';
+        const USER = 'test_user';
+
+        // Tracking state
+        let isTracking = false;
+        let blinkCount = 0;
+        let sessionStartTime = null;
+        let sessionInterval = null;
+        let faceMesh = null;
+        let camera = null;
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(el => {
+                el.classList.remove('tab-active');
+                el.classList.add('tab-inactive');
+            });
+
+            // Show selected tab
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.remove('tab-inactive');
+            document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+
+            // Load data for specific tabs
+            if (tabName === 'dashboard') loadDashboard();
+            if (tabName === 'analytics') loadAnalytics();
+        }
+
+        // Start tracking
+        async function startTracking() {
+            document.getElementById('startBtn').classList.add('hidden');
+            document.getElementById('stopBtn').classList.remove('hidden');
+            document.getElementById('cameraPlaceholder').classList.add('hidden');
+
+            isTracking = true;
+            blinkCount = 0;
+            sessionStartTime = Date.now();
+
+            // Start session timer
+            sessionInterval = setInterval(updateSessionTime, 1000);
+
+            // Initialize webcam
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('videoCanvas');
+            const ctx = canvas.getContext('2d');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.play();
+
+                video.onloadedmetadata = () => {
+                    // Draw video to canvas
+                    setInterval(() => {
+                        if (isTracking) {
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                            // Simulate blink detection (replace with actual MediaPipe)
+                            if (Math.random() < 0.01) {
+                                blinkCount++;
+                                document.getElementById('liveBlinks').textContent = blinkCount;
+                                updateBlinkRate();
+                            }
+
+                            // Update EAR
+                            const ear = (0.25 + Math.random() * 0.1).toFixed(3);
+                            document.getElementById('liveEAR').textContent = ear;
+                        }
+                    }, 100);
+                };
+
+            } catch (err) {
+                alert('Camera access denied. Please allow camera permissions.');
+                stopTracking();
+            }
+        }
+
+        // Stop tracking
+        function stopTracking() {
+            isTracking = false;
+            clearInterval(sessionInterval);
+
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.add('hidden');
+            document.getElementById('cameraPlaceholder').classList.remove('hidden');
+
+            // Stop webcam
+            const video = document.getElementById('webcam');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+
+            alert(`Session Complete!\nDuration: ${document.getElementById('liveSessionTime').textContent}\nBlinks: ${blinkCount}`);
+        }
+
+        // Update session time
+        function updateSessionTime() {
+            if (!isTracking) return;
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('liveSessionTime').textContent =
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Update blink rate
+        function updateBlinkRate() {
+            if (!sessionStartTime) return;
+            const elapsed = (Date.now() - sessionStartTime) / 60000; // minutes
+            const rate = elapsed > 0 ? Math.round(blinkCount / elapsed) : 0;
+            document.getElementById('liveBlinkRate').textContent = `${rate}/min`;
+
+            // Update progress bar
+            const percentage = Math.min(100, (rate / 20) * 100);
+            document.getElementById('blinkRateBar').style.width = `${percentage}%`;
+        }
+
+        // Load dashboard
+        async function loadDashboard() {
+            try {
+                const response = await axios.get(`${API_URL}/stats/dashboard?user=${USER}`);
+                const data = response.data.data;
+
+                document.getElementById('wellnessScore').textContent = data.wellness_score || '--';
+                document.getElementById('wellnessGrade').textContent = `Grade: ${data.wellness_grade}`;
+                document.getElementById('totalSessions').textContent = data.total_sessions || 0;
+                document.getElementById('screenTime').textContent = `${data.total_duration_hours || 0}h`;
+                document.getElementById('blinkRate').textContent = data.avg_blink_rate || '--';
+
+                // Load charts (simplified)
+                const sessions = data.recent_sessions || [];
+                if (sessions.length > 0) {
+                    const labels = sessions.map((s, i) => `S${i + 1}`).reverse();
+                    const blinkRates = sessions.map(s => s.avg_blink_rate || 0).reverse();
+
+                    const ctx = document.getElementById('dashBlinkChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Blink Rate',
+                                data: blinkRates,
+                                borderColor: 'rgb(147, 51, 234)',
+                                tension: 0.4
+                            }]
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load analytics
+        async function loadAnalytics() {
+            try {
+                const response = await axios.get(`${API_URL}/analytics/suggestions?user=${USER}`);
+                const suggestions = response.data.data;
+
+                const container = document.getElementById('suggestions');
+                container.innerHTML = suggestions.map(s => `
+                    <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                        <p class="text-gray-700">${s}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        // Generate PDF report
+        async function generatePDFReport() {
+            try {
+                document.getElementById('reportStatus').classList.remove('hidden');
+                document.getElementById('reportMessage').textContent = 'Generating PDF report...';
+
+                const response = await axios.get(`${API_URL}/reports/generate?user=${USER}`);
+
+                document.getElementById('reportMessage').textContent = '✅ PDF report generated successfully! Check your data/reports folder.';
+                setTimeout(() => {
+                    document.getElementById('reportStatus').classList.add('hidden');
+                }, 5000);
+            } catch (error) {
+                alert('Error generating report: ' + error.message);
+            }
+        }
+
+        // Export CSV
+        function exportCSV() {
+            window.open(`${API_URL}/export/csv?user=${USER}`, '_blank');
+            document.getElementById('reportStatus').classList.remove('hidden');
+            document.getElementById('reportMessage').textContent = '✅ CSV export started!';
+            setTimeout(() => {
+                document.getElementById('reportStatus').classList.add('hidden');
+            }, 3000);
+        }
+
+        // Export JSON
+        function exportJSON() {
+            window.open(`${API_URL}/export/json?user=${USER}`, '_blank');
+            document.getElementById('reportStatus').classList.remove('hidden');
+            document.getElementById('reportMessage').textContent = '✅ JSON export started!';
+            setTimeout(() => {
+                document.getElementById('reportStatus').classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Eyeguard Web App Loaded');
+        });
+    </script>
+</body>
+
+</html>

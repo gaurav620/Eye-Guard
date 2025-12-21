@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eyeguard - Professional Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Professional Header -->
+    <header class="gradient-header text-white shadow-2xl">
+        <div class="container mx-auto px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white bg-opacity-20 p-3 rounded-xl">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold">Eyeguard</h1>
+                        <p class="text-sm opacity-90 font-medium">Professional Eye Health Analytics</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button onclick="loadData()"
+                        class="px-5 py-2.5 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-sm font-semibold transition-all">
+                        🔄 Refresh
+                    </button>
+                    <div class="px-5 py-2.5 bg-white bg-opacity-20 rounded-lg text-sm font-semibold">
+                        👤 <span id="userName">test_user</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-8 py-10">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <!-- Wellness Score -->
+            <div class="card p-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-gray-600 text-sm font-semibold uppercase tracking-wide">Wellness Score</h3>
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number" id="wellnessScore">--</div>
+                <div class="text-sm font-medium mt-2" id="wellnessGrade">
+                    <span class="text-gray-500">Grade:</span> <span class="text-purple-600">--</span>
+                </div>
+            </div>
+
+            <!-- Sessions -->
+            <div class="card p-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-gray-600 text-sm font-semibold uppercase tracking-wide">Total Sessions</h3>
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number" id="totalSessions">--</div>
+                <div class="text-sm font-medium text-gray-500 mt-2">Last 7 days</div>
+            </div>
+
+            <!-- Screen Time -->
+            <div class="card p-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-gray-600 text-sm font-semibold uppercase tracking-wide">Screen Time</h3>
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number" id="screenTime">--</div>
+                <div class="text-sm font-medium text-gray-500 mt-2">Total hours</div>
+            </div>
+
+            <!-- Blink Rate -->
+            <div class="card p-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-gray-600 text-sm font-semibold uppercase tracking-wide">Avg Blink Rate</h3>
+                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-7 h-7 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number" id="blinkRate">--</div>
+                <div class="text-sm font-medium text-gray-500 mt-2">blinks/min</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+            <div class="card p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">📈 Blink Rate Trend</h3>
+                <canvas id="blinkChart"></canvas>
+            </div>
+            <div class="card p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">⏱️ Session Duration</h3>
+                <canvas id="durationChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Reports & Analytics Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+            <!-- Quick Actions -->
+            <div class="card p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">📊 Quick Reports</h3>
+                <div class="space-y-4">
+                    <button onclick="generatePDF()"
+                        class="btn-primary w-full text-left flex items-center justify-between">
+                        <span>📄 Generate PDF</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </button>
+                    <button onclick="exportCSV()"
+                        class="btn-primary w-full text-left flex items-center justify-between">
+                        <span>📗 Export CSV</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </button>
+                    <button onclick="exportJSON()"
+                        class="btn-primary w-full text-left flex items-center justify-between">
+                        <span>📘 Export JSON</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="lg:col-span-2 card p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">💡 Health Recommendations</h3>
+                <div id="suggestions" class="space-y-4">
+                    <div class="text-center text-gray-400 py-8">Loading recommendations...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMsg"
+            class="hidden fixed bottom-8 right-8 bg-green-500 text-white px-8 py-4 rounded-xl shadow-2xl font-semibold">
+            ✅ <span id="successText">Action completed!</span>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api';
+        const USER = 'test_user';
+        let charts = {};
+
+        // Load all data
+        async function loadData() {
+            try {
+                const response = await axios.get(`${API_URL}/stats/dashboard?user=${USER}`);
+                const data = response.data.data;
+
+                // Update stats
+                document.getElementById('wellnessScore').textContent = data.wellness_score || '--';
+                document.getElementById('wellnessGrade').innerHTML = `<span class="text-gray-500">Grade:</span> <span class="text-purple-600 font-bold">${data.wellness_grade || '--'}</span>`;
+                document.getElementById('totalSessions').textContent = data.total_sessions || 0;
+                document.getElementById('screenTime').textContent = `${data.total_duration_hours || 0}h`;
+                document.getElementById('blinkRate').textContent = (data.avg_blink_rate || 0).toFixed(1);
+
+                // Load charts
+                loadCharts(data.recent_sessions);
+
+                // Load suggestions
+                loadSuggestions();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showMessage('⚠️ Could not load data. Make sure API is running on port 8080', 'error');
+            }
+        }
+
+        // Load charts
+        function loadCharts(sessions) {
+            if (!sessions || sessions.length === 0) return;
+
+            const labels = sessions.map((s, i) => `Session ${sessions.length - i}`).reverse();
+            const blinkRates = sessions.map(s => s.avg_blink_rate || 0).reverse();
+            const durations = sessions.map(s => (s.duration_seconds || 0) / 60).reverse();
+
+            // Blink Rate Chart
+            const blinkCtx = document.getElementById('blinkChart').getContext('2d');
+            if (charts.blink) charts.blink.destroy();
+            charts.blink = new Chart(blinkCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Blink Rate (per min)',
+                        data: blinkRates,
+                        borderColor: 'rgb(147, 51, 234)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Duration Chart
+            const durationCtx = document.getElementById('durationChart').getContext('2d');
+            if (charts.duration) charts.duration.destroy();
+            charts.duration = new Chart(durationCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Duration (minutes)',
+                        data: durations,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Load suggestions
+        async function loadSuggestions() {
+            try {
+                const response = await axios.get(`${API_URL}/analytics/suggestions?user=${USER}`);
+                const suggestions = response.data.data;
+
+                const container = document.getElementById('suggestions');
+                container.innerHTML = suggestions.map(s => `
+                    <div class="flex items-start space-x-4 p-5 bg-blue-50 rounded-xl border-l-4 border-blue-500">
+                        <div class="text-2xl">💡</div>
+                        <div class="flex-1 text-gray-700 font-medium">${s}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading suggestions:', error);
+            }
+        }
+
+        // Generate PDF
+        async function generatePDF() {
+            showMessage('📊 Generating PDF report...');
+            try {
+                await axios.get(`${API_URL}/reports/generate?user=${USER}`);
+                showMessage('✅ PDF report generated! Check data/reports folder', 'success');
+            } catch (error) {
+                showMessage('❌ Error generating report', 'error');
+            }
+        }
+
+        // Export CSV
+        function exportCSV() {
+            showMessage('📗 Downloading CSV...');
+            window.open(`${API_URL}/export/csv?user=${USER}`, '_blank');
+            setTimeout(() => showMessage('✅ CSV downloaded!', 'success'), 1000);
+        }
+
+        // Export JSON
+        function exportJSON() {
+            showMessage('📘 Downloading JSON...');
+            window.open(`${API_URL}/export/json?user=${USER}`, '_blank');
+            setTimeout(() => showMessage('✅ JSON downloaded!', 'success'), 1000);
+        }
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            const msg = document.getElementById('successMsg');
+            document.getElementById('successText').textContent = text;
+            msg.className = `fixed bottom-8 right-8 px-8 py-4 rounded-xl shadow-2xl font-semibold ${type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                } text-white`;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        // Auto-load on page load
+        loadData();
+        setInterval(loadData, 30000); // Refresh every 30 seconds
+    </script>
+</body>
+
+</html>

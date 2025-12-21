@@ -1,0 +1,59 @@
+{
+  "export_info": {
+    "user_profile": "test_user",
+    "export_timestamp": "2025-11-27T14:39:15.591629",
+    "total_sessions": 1
+  },
+  "sessions": [
+    {
+      "session_id": 1,
+      "user_profile": "test_user",
+      "start_time": "2025-11-27 12:46:25.988824",
+      "end_time": "2025-11-27 12:46:25.991119",
+      "duration_seconds": 0,
+      "total_blinks": 5,
+      "avg_blink_rate": 15.0,
+      "avg_ear": 0.30000000000000004,
+      "min_ear": 0.3,
+      "max_ear": 0.3,
+      "fatigue_level": 0,
+      "alerts_triggered": 0,
+      "breaks_taken": 0,
+      "notes": null,
+      "created_at": "2025-11-27 07:16:25"
+    }
+  ],
+  "analytics": {
+    "user_profile": "test_user",
+    "analysis_date": "2025-11-27T14:39:15.594051",
+    "period_days": 30,
+    "wellness_score": {
+      "score": 50,
+      "grade": "D",
+      "message": "Needs improvement. Focus on blinking and breaks.",
+      "breakdown": {
+        "blink_health": 30,
+        "session_duration": 0,
+        "break_compliance": 0,
+        "alert_frequency": 20
+      },
+      "metrics": {
+        "avg_blink_rate": 15.0,
+        "avg_session_duration": NaN,
+        "breaks_taken": 0,
+        "total_alerts": 0
+      }
+    },
+    "patterns": {
+      "insufficient_data": true
+    },
+    "suggestions": [
+      "\u23f1\ufe0f Break long sessions into shorter periods (aim for < 30 min)",
+      "\u2615 Take more frequent breaks - follow the 20-20-20 rule strictly",
+      "\ud83d\udca1 Use the Eyeguard calibration feature for personalized thresholds",
+      "\ud83c\udfc3 Take a 5-minute walk between long sessions"
+    ],
+    "total_sessions": 1,
+    "export_timestamp": "2025-11-27T14:39:15.594057"
+  }
+}
