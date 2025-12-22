@@ -1,10 +1,13 @@
-// Eyeguard Service Worker - v1.0.0
-const CACHE_NAME = 'eyeguard-cache-v1';
+// Eyeguard Service Worker - v2.0.0 (with authentication)
+const CACHE_NAME = 'eyeguard-cache-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/login.html',
   '/styles.css',
   '/app.js',
+  '/auth.js',
+  '/firebase-config.js',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
@@ -45,35 +48,35 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
+
   // Skip cross-origin requests except fonts
   const url = new URL(event.request.url);
   if (url.origin !== location.origin && !url.hostname.includes('fonts.googleapis.com')) {
     return;
   }
-  
+
   event.respondWith(
     caches.match(event.request)
       .then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse;
         }
-        
+
         return fetch(event.request)
           .then((response) => {
             // Don't cache non-successful responses
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
-            
+
             // Clone the response
             const responseToCache = response.clone();
-            
+
             caches.open(CACHE_NAME)
               .then((cache) => {
                 cache.put(event.request, responseToCache);
               });
-            
+
             return response;
           })
           .catch(() => {
@@ -114,7 +117,7 @@ self.addEventListener('push', (event) => {
       { action: 'dismiss', title: 'Dismiss' }
     ]
   };
-  
+
   event.waitUntil(
     self.registration.showNotification('Eyeguard', options)
   );
@@ -122,7 +125,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
+
   if (event.action === 'take-break') {
     event.waitUntil(
       clients.openWindow('/index.html?break=true')
