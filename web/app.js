@@ -13,12 +13,22 @@ const CONFIG = {
     HEALTHY_BLINK_RATE_MIN: 15,    // Healthy range: 15-20 blinks/min
     HEALTHY_BLINK_RATE_MAX: 20,
     BREAK_INTERVAL: 20 * 60 * 1000, // 20 minutes for 20-20-20 rule
+    BREAK_DURATION: 20 * 1000,     // 20 seconds for break
 
     // MediaPipe FaceLandmarker eye indices
     LEFT_EYE: [362, 385, 387, 263, 373, 380],  // p1-p6 for left eye
     RIGHT_EYE: [33, 160, 158, 133, 153, 144],  // p1-p6 for right eye
     LEFT_IRIS: [468, 469, 470, 471, 472],
-    RIGHT_IRIS: [473, 474, 475, 476, 477]
+    RIGHT_IRIS: [473, 474, 475, 476, 477],
+
+    // Health Analysis Thresholds
+    FATIGUE_THRESHOLD_MILD: 0.8,   // 80% of initial blink rate
+    FATIGUE_THRESHOLD_HIGH: 0.6,   // 60% of initial blink rate
+    EYE_STRAIN_WEIGHTS: {
+        blinkRate: 0.4,            // 40% weight for blink rate
+        sessionDuration: 0.3,      // 30% weight for duration
+        breakCompliance: 0.3       // 30% weight for taking breaks
+    }
 };
 
 // ============ STATE ============
@@ -40,7 +50,17 @@ let state = {
 
     // Break timer
     lastBreakTime: null,
-    breakTimerInterval: null
+    breakTimerInterval: null,
+
+    // Health Analysis (NEW)
+    initialBlinkRate: null,      // First 2 minutes avg blink rate
+    eyeStrainScore: 100,         // 0-100 (100 = healthy)
+    fatigueLevel: 'low',         // low, medium, high
+    breaksTaken: 0,
+    breaksReminded: 0,
+    earHistory: [],              // Last 100 EAR values for trend
+    isOnBreak: false,
+    breakCountdown: 0
 };
 
 // ============ DOM ELEMENTS ============
@@ -297,6 +317,11 @@ function stopTracking() {
         ? (state.blinkCount / (duration / 60)).toFixed(1)
         : 0;
 
+    // Save session to history before resetting
+    if (duration > 60) {
+        saveSessionToHistory();
+    }
+
     // Show summary if we had a session
     if (duration > 0) {
         showToast(`Session: ${formatTime(duration)} | ${state.blinkCount} blinks | ${avgRate}/min`, 'success');
@@ -442,6 +467,13 @@ function updateBlinkRate() {
     }
 
     updateHealthStatus(rate);
+
+    // Update health analysis every 30 seconds
+    if (Math.floor(elapsedMinutes * 2) !== state._lastHealthUpdate) {
+        state._lastHealthUpdate = Math.floor(elapsedMinutes * 2);
+        calculateEyeStrainScore();
+        detectFatigueLevel();
+    }
 }
 
 function updateHealthStatus(rate) {
@@ -497,7 +529,8 @@ function startBreakTimer() {
 }
 
 function showBreakReminder() {
-    showToast('⏰ Time for a break! Look 20ft away for 20 seconds', 'warning');
+    // Use the new overlay system
+    showBreakOverlay();
 
     if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Eyeguard - Break Time!', {
@@ -589,3 +622,281 @@ function showToast(message, type = 'info') {
         elements.toast.classList.remove('show');
     }, 4000);
 }
+
+// ============ HEALTH ANALYSIS ============
+function calculateEyeStrainScore() {
+    if (!state.sessionStartTime) return 100;
+
+    const elapsedMinutes = (Date.now() - state.sessionStartTime) / 60000;
+    if (elapsedMinutes < 1) return 100;
+
+    // Calculate current blink rate
+    const currentBlinkRate = state.blinkCount / elapsedMinutes;
+
+    // 1. Blink Rate Score (40%)
+    let blinkScore = 100;
+    if (currentBlinkRate < CONFIG.HEALTHY_BLINK_RATE_MIN) {
+        blinkScore = Math.max(0, (currentBlinkRate / CONFIG.HEALTHY_BLINK_RATE_MIN) * 100);
+    } else if (currentBlinkRate > CONFIG.HEALTHY_BLINK_RATE_MAX * 1.5) {
+        blinkScore = 70; // Too high can indicate irritation
+    }
+
+    // 2. Session Duration Score (30%)
+    let durationScore = 100;
+    if (elapsedMinutes > 60) {
+        durationScore = Math.max(30, 100 - (elapsedMinutes - 60) * 2);
+    } else if (elapsedMinutes > 30) {
+        durationScore = 100 - (elapsedMinutes - 30);
+    }
+
+    // 3. Break Compliance Score (30%)
+    let breakScore = 100;
+    if (state.breaksReminded > 0) {
+        breakScore = Math.min(100, (state.breaksTaken / state.breaksReminded) * 100);
+    }
+
+    // Weighted average
+    const totalScore = Math.round(
+        blinkScore * CONFIG.EYE_STRAIN_WEIGHTS.blinkRate +
+        durationScore * CONFIG.EYE_STRAIN_WEIGHTS.sessionDuration +
+        breakScore * CONFIG.EYE_STRAIN_WEIGHTS.breakCompliance
+    );
+
+    state.eyeStrainScore = Math.max(0, Math.min(100, totalScore));
+    updateHealthDisplay();
+    return state.eyeStrainScore;
+}
+
+function detectFatigueLevel() {
+    const elapsedMinutes = (Date.now() - state.sessionStartTime) / 60000;
+    if (elapsedMinutes < 2) return 'low';
+
+    const currentBlinkRate = state.blinkCount / elapsedMinutes;
+
+    // Set initial blink rate after 2 minutes
+    if (!state.initialBlinkRate && elapsedMinutes >= 2) {
+        state.initialBlinkRate = currentBlinkRate;
+    }
+
+    if (state.initialBlinkRate) {
+        const ratio = currentBlinkRate / state.initialBlinkRate;
+        if (ratio < CONFIG.FATIGUE_THRESHOLD_HIGH) {
+            state.fatigueLevel = 'high';
+        } else if (ratio < CONFIG.FATIGUE_THRESHOLD_MILD) {
+            state.fatigueLevel = 'medium';
+        } else {
+            state.fatigueLevel = 'low';
+        }
+    }
+
+    return state.fatigueLevel;
+}
+
+function updateHealthDisplay() {
+    const scoreEl = document.getElementById('eyeStrainScore');
+    const fatigueEl = document.getElementById('fatigueLevel');
+    const meterFill = document.getElementById('strainMeterFill');
+
+    if (scoreEl) {
+        scoreEl.textContent = state.eyeStrainScore;
+        scoreEl.className = 'health-score-value ' + getScoreClass(state.eyeStrainScore);
+    }
+
+    if (meterFill) {
+        meterFill.style.width = `${state.eyeStrainScore}%`;
+        meterFill.className = 'strain-meter-fill ' + getScoreClass(state.eyeStrainScore);
+    }
+
+    if (fatigueEl) {
+        const fatigueIcons = { low: '😊', medium: '😐', high: '😫' };
+        const fatigueLabels = { low: 'Low Fatigue', medium: 'Moderate Fatigue', high: 'High Fatigue' };
+        fatigueEl.textContent = `${fatigueIcons[state.fatigueLevel]} ${fatigueLabels[state.fatigueLevel]}`;
+        fatigueEl.className = 'fatigue-indicator fatigue-' + state.fatigueLevel;
+    }
+}
+
+function getScoreClass(score) {
+    if (score >= 80) return 'excellent';
+    if (score >= 60) return 'good';
+    if (score >= 40) return 'moderate';
+    return 'poor';
+}
+
+// ============ ENHANCED BREAK SYSTEM ============
+function showBreakOverlay() {
+    state.isOnBreak = true;
+    state.breakCountdown = CONFIG.BREAK_DURATION / 1000;
+    state.breaksReminded++;
+
+    // Create break overlay if not exists
+    let overlay = document.getElementById('breakOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'breakOverlay';
+        overlay.className = 'break-overlay';
+        overlay.innerHTML = `
+            <div class="break-content">
+                <div class="break-icon">👀</div>
+                <h2>Time for an Eye Break!</h2>
+                <p>Look at something 20 feet away</p>
+                <div class="break-countdown" id="breakCountdownDisplay">20</div>
+                <p class="break-subtitle">seconds remaining</p>
+                <button class="btn btn-secondary" onclick="skipBreak()">Skip Break</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    overlay.classList.add('show');
+
+    // Start countdown
+    const countdownEl = document.getElementById('breakCountdownDisplay');
+    const countdownInterval = setInterval(() => {
+        state.breakCountdown--;
+        if (countdownEl) countdownEl.textContent = state.breakCountdown;
+
+        if (state.breakCountdown <= 0) {
+            clearInterval(countdownInterval);
+            completeBreak();
+        }
+    }, 1000);
+
+    // Store interval for potential skip
+    overlay.dataset.intervalId = countdownInterval;
+}
+
+function completeBreak() {
+    state.isOnBreak = false;
+    state.breaksTaken++;
+    state.lastBreakTime = Date.now();
+
+    const overlay = document.getElementById('breakOverlay');
+    if (overlay) {
+        overlay.classList.remove('show');
+    }
+
+    showToast('✅ Great job taking a break! Your eyes thank you.', 'success');
+    calculateEyeStrainScore();
+}
+
+// Global function for skip button
+window.skipBreak = function () {
+    const overlay = document.getElementById('breakOverlay');
+    if (overlay) {
+        const intervalId = overlay.dataset.intervalId;
+        if (intervalId) clearInterval(parseInt(intervalId));
+        overlay.classList.remove('show');
+    }
+    state.isOnBreak = false;
+    state.lastBreakTime = Date.now();
+    showToast('Break skipped. Remember to rest your eyes!', 'warning');
+};
+
+// ============ EMAIL REPORT ============
+function generateHealthReport() {
+    const duration = state.sessionStartTime
+        ? Math.floor((Date.now() - state.sessionStartTime) / 1000)
+        : 0;
+    const avgRate = duration > 0
+        ? (state.blinkCount / (duration / 60)).toFixed(1)
+        : 0;
+
+    const report = {
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        sessionDuration: formatTime(duration),
+        totalBlinks: state.blinkCount,
+        avgBlinkRate: avgRate,
+        eyeStrainScore: state.eyeStrainScore,
+        fatigueLevel: state.fatigueLevel,
+        breaksTaken: state.breaksTaken,
+        breaksReminded: state.breaksReminded,
+        recommendations: getHealthRecommendations()
+    };
+
+    return report;
+}
+
+function getHealthRecommendations() {
+    const recommendations = [];
+
+    const elapsedMinutes = state.sessionStartTime
+        ? (Date.now() - state.sessionStartTime) / 60000
+        : 0;
+    const blinkRate = elapsedMinutes > 0 ? state.blinkCount / elapsedMinutes : 0;
+
+    if (blinkRate < CONFIG.HEALTHY_BLINK_RATE_MIN) {
+        recommendations.push('⚠️ Your blink rate is below normal. Try to blink more consciously.');
+    }
+    if (elapsedMinutes > 60) {
+        recommendations.push('⏰ Long screen session detected. Consider taking longer breaks.');
+    }
+    if (state.fatigueLevel === 'high') {
+        recommendations.push('😫 High fatigue detected. Rest your eyes for 10-15 minutes.');
+    }
+    if (state.breaksTaken < state.breaksReminded) {
+        recommendations.push('🔔 You missed some eye breaks. Following the 20-20-20 rule helps prevent strain.');
+    }
+    if (recommendations.length === 0) {
+        recommendations.push('✅ Great job! Your eye health looks good. Keep following healthy habits!');
+    }
+
+    return recommendations;
+}
+
+function sendEmailReport() {
+    const report = generateHealthReport();
+
+    const subject = `Eyeguard Health Report - ${report.date}`;
+    const body = `
+🏥 EYEGUARD EYE HEALTH REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📅 Date: ${report.date}
+🕐 Time: ${report.time}
+
+📊 SESSION SUMMARY
+━━━━━━━━━━━━━━━━━━
+⏱️ Duration: ${report.sessionDuration}
+👁️ Total Blinks: ${report.totalBlinks}
+📈 Avg Blink Rate: ${report.avgBlinkRate}/min
+🎯 Eye Strain Score: ${report.eyeStrainScore}/100
+😊 Fatigue Level: ${report.fatigueLevel}
+☕ Breaks Taken: ${report.breaksTaken}/${report.breaksReminded}
+
+💡 RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━
+${report.recommendations.join('\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Generated by Eyeguard - Your Eye Health Monitor
+    `.trim();
+
+    // Open email client with pre-filled content
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoLink, '_blank');
+
+    showToast('📧 Email report ready! Check your email app.', 'success');
+}
+
+// Global function for email button
+window.sendEmailReport = sendEmailReport;
+
+// ============ SAVE SESSION DATA ============
+function saveSessionToHistory() {
+    const report = generateHealthReport();
+    const history = JSON.parse(localStorage.getItem('eyeguard_sessions') || '[]');
+
+    history.push({
+        ...report,
+        timestamp: Date.now()
+    });
+
+    // Keep last 30 sessions
+    if (history.length > 30) {
+        history.shift();
+    }
+
+    localStorage.setItem('eyeguard_sessions', JSON.stringify(history));
+}
+

@@ -135,6 +135,24 @@
                         <div class="stat-value" id="earValue">-</div>
                     </div>
 
+                    <!-- NEW: Eye Health Score Card -->
+                    <div class="stat-card health-score-card">
+                        <div class="stat-label">🎯 Eye Health Score</div>
+                        <div class="health-score-display">
+                            <span class="health-score-value excellent" id="eyeStrainScore">100</span>
+                            <span class="health-score-unit">/100</span>
+                        </div>
+                        <div class="strain-meter">
+                            <div class="strain-meter-fill excellent" id="strainMeterFill" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- NEW: Fatigue Level Indicator -->
+                    <div class="stat-card fatigue-card">
+                        <div class="stat-label">😊 Fatigue Level</div>
+                        <div class="fatigue-indicator fatigue-low" id="fatigueLevel">😊 Low Fatigue</div>
+                    </div>
+
                     <div id="healthStatus" class="health-status healthy">
                         ✅ Eyes Healthy
                     </div>
@@ -148,6 +166,11 @@
                             </p>
                         </div>
                     </div>
+
+                    <!-- NEW: Email Report Button -->
+                    <button class="btn btn-email-report" onclick="sendEmailReport()">
+                        📧 Send Report via Email
+                    </button>
                 </div>
             </div>
         </section>
