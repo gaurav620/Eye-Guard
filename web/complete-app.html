@@ -99,8 +99,12 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="px-4 py-2 bg-white bg-opacity-20 rounded-lg text-sm font-medium">
-                        👤 <span id="currentUser">User</span>
+                        👤 <span id="currentUser">Loading...</span>
                     </span>
+                    <button id="logoutBtn" onclick="handleLogout()"
+                        class="px-4 py-2 bg-red-500 bg-opacity-80 hover:bg-opacity-100 rounded-lg text-sm font-medium transition-all">
+                        🚪 Logout
+                    </button>
                 </div>
             </div>
 
@@ -537,6 +541,26 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Eyeguard Web App Loaded');
+        });
+    </script>
+
+    <!-- Auth Protection -->
+    <script type="module">
+        import { onAuthChange, signOut } from './auth.js';
+
+        // Make logout available globally
+        window.handleLogout = async function () {
+            await signOut();
+            window.location.href = 'login.html';
+        };
+
+        // Check authentication
+        onAuthChange((authState) => {
+            if (!authState.isLoggedIn) {
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('currentUser').textContent = authState.user.displayName;
+            }
         });
     </script>
 </body>

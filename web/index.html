@@ -32,9 +32,16 @@
                     <p>Eye Health Monitor</p>
                 </div>
             </div>
-            <button class="header-btn" id="installBtn" style="display: none;">
-                📲 Install App
-            </button>
+            <div class="header-actions">
+                <span class="user-greeting" id="userGreeting"
+                    style="margin-right: 1rem; font-size: 0.875rem; opacity: 0.9;"></span>
+                <button class="header-btn" id="logoutBtn" style="display: none;">
+                    🚪 Logout
+                </button>
+                <button class="header-btn" id="installBtn" style="display: none;">
+                    📲 Install App
+                </button>
+            </div>
         </div>
     </header>
 
@@ -158,6 +165,33 @@
         <span>📲 Install Eyeguard for the best experience</span>
         <button id="installBannerBtn">Install</button>
     </div>
+
+    <!-- Auth Check and App JavaScript -->
+    <script type="module">
+        import { onAuthChange, signOut } from './auth.js';
+
+        // Check authentication on page load
+        onAuthChange((authState) => {
+            if (!authState.isLoggedIn) {
+                // Not logged in - redirect to login page
+                window.location.href = 'login.html';
+            } else {
+                // User is logged in - show greeting
+                const greeting = document.getElementById('userGreeting');
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (greeting) {
+                    greeting.textContent = `👋 Hi, ${authState.user.displayName}`;
+                }
+                if (logoutBtn) {
+                    logoutBtn.style.display = 'inline-block';
+                    logoutBtn.addEventListener('click', async () => {
+                        await signOut();
+                        window.location.href = 'login.html';
+                    });
+                }
+            }
+        });
+    </script>
 
     <!-- App JavaScript with ES Modules -->
     <script type="module" src="app.js"></script>

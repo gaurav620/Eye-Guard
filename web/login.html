@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Sign in to Eye-Guard - AI-powered eye strain detection">
+    <title>Sign In - Eye-Guard</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .auth-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .auth-header p {
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .auth-body {
+            padding: 2rem;
+        }
+
+        /* Tab Navigation */
+        .auth-tabs {
+            display: flex;
+            background: #f3f4f6;
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .auth-tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-tab:hover:not(.active) {
+            color: #374151;
+        }
+
+        /* Forms */
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: #f9fafb;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        /* Password Toggle */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1.25rem;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-submit .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Forgot Password Link */
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 1.25rem;
+        }
+
+        .forgot-password a {
+            color: #667eea;
+            font-size: 0.875rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+            content: '';
+        }
+
+        .divider span {
+            padding: 0 1rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .alert-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* Back to Sign In link */
+        .back-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .auth-footer {
+            text-align: center;
+            padding: 1.5rem 2rem;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .auth-footer p {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        /* Password Strength */
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        .strength-weak {
+            width: 33%;
+            background: #ef4444;
+        }
+
+        .strength-medium {
+            width: 66%;
+            background: #f59e0b;
+        }
+
+        .strength-strong {
+            width: 100%;
+            background: #10b981;
+        }
+
+        .password-hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .auth-container {
+                border-radius: 1rem;
+            }
+
+            .auth-header {
+                padding: 1.5rem;
+            }
+
+            .auth-body {
+                padding: 1.5rem;
+            }
+
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <!-- Header -->
+        <div class="auth-header">
+            <div class="logo">
+                <span class="logo-icon">👁️</span>
+                <h1>Eye-Guard</h1>
+            </div>
+            <p>Protect Your Eyes with AI</p>
+        </div>
+
+        <!-- Body -->
+        <div class="auth-body">
+            <!-- Alert Container -->
+            <div id="alertBox" class="alert">
+                <span class="alert-icon" id="alertIcon">✅</span>
+                <span id="alertMessage"></span>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auth-tabs" id="authTabs">
+                <button class="auth-tab active" data-tab="signin">Sign In</button>
+                <button class="auth-tab" data-tab="signup">Sign Up</button>
+            </div>
+
+            <!-- Sign In Form -->
+            <form id="signinForm" class="auth-form active">
+                <div class="form-group">
+                    <label class="form-label" for="signinEmail">Email Address</label>
+                    <input type="email" id="signinEmail" class="form-input" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signinPassword">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signinPassword" class="form-input" placeholder="Enter your password"
+                            required>
+                        <button type="button" class="password-toggle"
+                            onclick="togglePassword('signinPassword', this)">👁️</button>
+                    </div>
+                </div>
+
+                <div class="forgot-password">
+                    <a href="#" onclick="showForgotPassword(); return false;">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-submit" id="signinBtn">
+                    <span>Sign In</span>
+                </button>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label" for="signupName">Display Name</label>
+                    <input type="text" id="signupName" class="form-input" placeholder="Your name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" class="form-input" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signupPassword">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupPassword" class="form-input" placeholder="Create a password"
+                            required minlength="6" oninput="updatePasswordStrength(this.value)">
+                        <button type="button" class="password-toggle"
+                            onclick="togglePassword('signupPassword', this)">👁️</button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="strengthBar"></div>
+                    </div>
+                    <p class="password-hint">Minimum 6 characters</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signupConfirmPassword">Confirm Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupConfirmPassword" class="form-input"
+                            placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle"
+                            onclick="togglePassword('signupConfirmPassword', this)">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="signupBtn">
+                    <span>Create Account</span>
+                </button>
+            </form>
+
+            <!-- Forgot Password Form -->
+            <form id="forgotForm" class="auth-form">
+                <p style="text-align: center; color: #6b7280; margin-bottom: 1.5rem;">
+                    Enter your email and we'll send you a link to reset your password.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label" for="forgotEmail">Email Address</label>
+                    <input type="email" id="forgotEmail" class="form-input" placeholder="you@example.com" required>
+                </div>
+
+                <button type="submit" class="btn-submit" id="forgotBtn">
+                    <span>Send Reset Link</span>
+                </button>
+
+                <div class="back-link">
+                    <a href="#" onclick="showSignIn(); return false;">← Back to Sign In</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+            <p>© 2024 Eye-Guard | Made with 💜 for eye health</p>
+        </div>
+    </div>
+
+    <!-- Auth Script -->
+    <script type="module">
+        import { signIn, signUp, resetPassword, checkAuth } from './auth.js';
+
+        // Check if already logged in
+        checkAuth().then(isLoggedIn => {
+            if (isLoggedIn) {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Tab Switching
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                // Update tabs
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update forms
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                document.getElementById(`${tabName}Form`).classList.add('active');
+
+                // Hide tabs container if showing forgot form
+                document.getElementById('authTabs').style.display = 'flex';
+
+                // Clear alerts
+                hideAlert();
+            });
+        });
+
+        // Sign In Form Submit
+        document.getElementById('signinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('signinEmail').value.trim();
+            const password = document.getElementById('signinPassword').value;
+            const btn = document.getElementById('signinBtn');
+
+            setButtonLoading(btn, true);
+
+            const result = await signIn(email, password);
+
+            if (result.success) {
+                showAlert('success', result.message);
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } else {
+                showAlert('error', result.error);
+                setButtonLoading(btn, false);
+            }
+        });
+
+        // Sign Up Form Submit
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const btn = document.getElementById('signupBtn');
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                showAlert('error', 'Passwords do not match!');
+                return;
+            }
+
+            setButtonLoading(btn, true);
+
+            const result = await signUp(email, password, name);
+
+            if (result.success) {
+                showAlert('success', result.message);
+                setTimeout(() => {
+                    // Switch to sign in tab
+                    document.querySelector('[data-tab="signin"]').click();
+                    document.getElementById('signinEmail').value = email;
+                    showAlert('info', 'Please check your email to verify, then sign in.');
+                }, 2000);
+            } else {
+                showAlert('error', result.error);
+            }
+
+            setButtonLoading(btn, false);
+        });
+
+        // Forgot Password Form Submit
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('forgotEmail').value.trim();
+            const btn = document.getElementById('forgotBtn');
+
+            setButtonLoading(btn, true);
+
+            const result = await resetPassword(email);
+
+            if (result.success) {
+                showAlert('success', result.message);
+            } else {
+                showAlert('error', result.error);
+            }
+
+            setButtonLoading(btn, false);
+        });
+
+        // Helper: Show Alert
+        window.showAlert = function (type, message) {
+            const alertBox = document.getElementById('alertBox');
+            const alertIcon = document.getElementById('alertIcon');
+            const alertMessage = document.getElementById('alertMessage');
+
+            alertBox.className = `alert alert-${type} show`;
+            alertIcon.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            alertMessage.textContent = message;
+        }
+
+        // Helper: Hide Alert
+        window.hideAlert = function () {
+            document.getElementById('alertBox').classList.remove('show');
+        }
+
+        // Helper: Button Loading State
+        function setButtonLoading(btn, loading) {
+            if (loading) {
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner"></div><span>Please wait...</span>';
+            } else {
+                btn.disabled = false;
+                const text = btn.id === 'signinBtn' ? 'Sign In' :
+                    btn.id === 'signupBtn' ? 'Create Account' : 'Send Reset Link';
+                btn.innerHTML = `<span>${text}</span>`;
+            }
+        }
+
+        // Show Forgot Password Form
+        window.showForgotPassword = function () {
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('forgotForm').classList.add('active');
+            document.getElementById('authTabs').style.display = 'none';
+            hideAlert();
+        }
+
+        // Show Sign In Form
+        window.showSignIn = function () {
+            document.getElementById('authTabs').style.display = 'flex';
+            document.querySelector('[data-tab="signin"]').click();
+        }
+
+        // Toggle Password Visibility
+        window.togglePassword = function (inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        // Password Strength Indicator
+        window.updatePasswordStrength = function (password) {
+            const strengthBar = document.getElementById('strengthBar');
+
+            if (password.length === 0) {
+                strengthBar.className = 'password-strength-bar';
+                return;
+            }
+
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+            if (strength <= 2) {
+                strengthBar.className = 'password-strength-bar strength-weak';
+            } else if (strength <= 3) {
+                strengthBar.className = 'password-strength-bar strength-medium';
+            } else {
+                strengthBar.className = 'password-strength-bar strength-strong';
+            }
+        }
+    </script>
+</body>
+
+</html>
