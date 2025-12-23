@@ -189,6 +189,12 @@ async function startTracking() {
         });
         console.log('Camera access granted');
 
+        // Request notification permission for break reminders
+        if ('Notification' in window && Notification.permission === 'default') {
+            const permission = await Notification.requestPermission();
+            console.log('Notification permission:', permission);
+        }
+
         elements.videoElement.srcObject = state.stream;
 
         // Wait for video to be ready
@@ -532,11 +538,24 @@ function showBreakReminder() {
     // Use the new overlay system
     showBreakOverlay();
 
+    // Send browser notification
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Eyeguard - Break Time!', {
-            body: 'Look at something 20 feet away for 20 seconds',
-            icon: 'icons/icon-192x192.png'
+        const notification = new Notification('👁️ Eye-Guard - Break Time!', {
+            body: '⏰ 20-20-20 Rule: Look at something 20 feet away for 20 seconds.\n\nYour eyes will thank you!',
+            icon: 'icons/icon-192x192.png',
+            badge: 'icons/icon-72x72.png',
+            tag: 'eye-break-reminder',
+            requireInteraction: true,
+            vibrate: [200, 100, 200]
         });
+
+        notification.onclick = () => {
+            window.focus();
+            notification.close();
+        };
+
+        // Auto-close after 30 seconds
+        setTimeout(() => notification.close(), 30000);
     }
 }
 
