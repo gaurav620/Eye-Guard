@@ -1,5 +1,5 @@
-// Eyeguard Service Worker - v2.0.0 (with authentication)
-const CACHE_NAME = 'eyeguard-cache-v2';
+// Eyeguard Service Worker - v3.0.0 (with AI chat)
+const CACHE_NAME = 'eyeguard-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -8,6 +8,8 @@ const ASSETS_TO_CACHE = [
   '/app.js',
   '/auth.js',
   '/firebase-config.js',
+  '/ai-chat.js',
+  '/ai-chat.css',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
