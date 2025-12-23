@@ -1,0 +1,526 @@
+/* ============ Advanced Features Styles ============ */
+
+/* Dark Mode */
+.dark-mode {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+}
+
+.dark-mode body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.dark-mode .header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.dark-mode .container {
+    background: var(--bg-primary);
+}
+
+.dark-mode .card,
+.dark-mode .stat-card,
+.dark-mode .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+}
+
+.dark-mode .card-title,
+.dark-mode .feature-title,
+.dark-mode .landing-title {
+    color: var(--text-primary);
+}
+
+.dark-mode .landing-subtitle,
+.dark-mode .feature-desc,
+.dark-mode .stat-label {
+    color: var(--text-secondary);
+}
+
+.dark-mode .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark-mode .health-status.healthy {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+.dark-mode .ai-chat-window {
+    background: var(--bg-secondary);
+}
+
+.dark-mode .ai-chat-messages {
+    background: var(--bg-primary);
+}
+
+.dark-mode .ai-chat-message.ai .ai-chat-message-bubble {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.dark-mode .ai-chat-input {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.dark-mode .ai-chat-quick-btn {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+/* Settings Button */
+.settings-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px !important;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: rotate(45deg);
+}
+
+/* Streak Display */
+.streak-display {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-right: 8px;
+    animation: streak-glow 2s infinite;
+}
+
+@keyframes streak-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.8);
+    }
+}
+
+/* Settings Panel */
+.settings-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.settings-panel.open {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.settings-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.settings-content {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    max-width: 100%;
+    background: white;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.2);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dark-mode .settings-content {
+    background: var(--bg-secondary);
+}
+
+.settings-panel.open .settings-content {
+    transform: translateX(0);
+}
+
+.settings-header {
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.settings-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.settings-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.settings-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px;
+}
+
+/* Settings Items */
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dark-mode .settings-item {
+    border-color: var(--border-color);
+}
+
+.settings-item-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-item-icon {
+    font-size: 1.5rem;
+}
+
+.settings-item-title {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.dark-mode .settings-item-title {
+    color: var(--text-primary);
+}
+
+.settings-item-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.dark-mode .settings-item-desc {
+    color: var(--text-secondary);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #cbd5e1;
+    border-radius: 28px;
+    transition: 0.3s;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked+.toggle-slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.toggle-switch input:checked+.toggle-slider:before {
+    transform: translateX(24px);
+}
+
+/* Settings Select */
+.settings-select {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    cursor: pointer;
+}
+
+.dark-mode .settings-select {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Settings Sections */
+.settings-section {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.dark-mode .settings-section {
+    border-color: var(--border-color);
+}
+
+.settings-section h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 12px;
+}
+
+.dark-mode .settings-section h4 {
+    color: var(--text-secondary);
+}
+
+/* Session History */
+.session-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.session-item {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dark-mode .session-item {
+    background: var(--bg-card);
+}
+
+.session-date {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e293b;
+}
+
+.dark-mode .session-date {
+    color: var(--text-primary);
+}
+
+.session-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.no-sessions {
+    text-align: center;
+    padding: 20px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Exercise Button */
+.btn-exercise {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-exercise:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Tips Section */
+.tip-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    transition: all 0.3s;
+}
+
+.dark-mode .tip-card {
+    background: linear-gradient(135deg, #422006 0%, #713f12 100%);
+}
+
+.tip-card.tip-animate {
+    transform: scale(1.02);
+}
+
+.tip-icon {
+    font-size: 1.5rem;
+}
+
+.tip-text {
+    font-size: 0.9rem;
+    color: #78350f;
+    line-height: 1.5;
+}
+
+.dark-mode .tip-text {
+    color: #fef3c7;
+}
+
+.btn-tip {
+    width: 100%;
+    padding: 10px;
+    background: #f59e0b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-tip:hover {
+    background: #d97706;
+}
+
+/* Exercise Modal */
+.exercise-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.exercise-modal.open {
+    opacity: 1;
+}
+
+.exercise-content {
+    text-align: center;
+    color: white;
+    padding: 40px;
+    max-width: 400px;
+}
+
+.exercise-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.exercise-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.exercise-instruction {
+    font-size: 1.1rem;
+    color: #94a3b8;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.exercise-timer {
+    font-size: 6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.exercise-label {
+    font-size: 1rem;
+    color: #64748b;
+    margin-bottom: 30px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .settings-content {
+        width: 100%;
+    }
+
+    .streak-display {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+    }
+
+    .exercise-timer {
+        font-size: 4rem;
+    }
+
+    .exercise-icon {
+        font-size: 4rem;
+    }
+}
