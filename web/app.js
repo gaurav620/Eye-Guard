@@ -447,6 +447,11 @@ function detectBlink(ear) {
                 setTimeout(() => blinkCard.classList.remove('blink-detected'), 500);
             }
 
+            // Play blink sound
+            if (window.playSound) {
+                window.playSound('blink');
+            }
+
             updateBlinkRate();
         }
         state.closedFrameCount = 0;
@@ -535,6 +540,11 @@ function startBreakTimer() {
 }
 
 function showBreakReminder() {
+    // Play break sound
+    if (window.playSound) {
+        window.playSound('break');
+    }
+
     // Use the new overlay system
     showBreakOverlay();
 
@@ -792,6 +802,11 @@ function completeBreak() {
     const overlay = document.getElementById('breakOverlay');
     if (overlay) {
         overlay.classList.remove('show');
+    }
+
+    // Play completion sound
+    if (window.playSound) {
+        window.playSound('complete');
     }
 
     showToast('✅ Great job taking a break! Your eyes thank you.', 'success');

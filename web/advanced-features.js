@@ -111,41 +111,68 @@ function initSounds() {
     if (!AudioContext) return;
 
     sounds.context = new AudioContext();
+
+    // Resume audio context on first user interaction (required by browsers)
+    const resumeAudio = () => {
+        if (sounds.context && sounds.context.state === 'suspended') {
+            sounds.context.resume().then(() => {
+                console.log('AudioContext resumed successfully');
+            }).catch(err => {
+                console.error('Failed to resume AudioContext:', err);
+            });
+        }
+        // Remove listener after first interaction
+        document.removeEventListener('click', resumeAudio);
+        document.removeEventListener('keydown', resumeAudio);
+    };
+
+    document.addEventListener('click', resumeAudio);
+    document.addEventListener('keydown', resumeAudio);
 }
 
 function playSound(type) {
     if (!currentSettings.soundEnabled || !sounds.context) return;
 
-    const ctx = sounds.context;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
+    try {
+        const ctx = sounds.context;
 
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+        // Ensure context is resumed
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
 
-    switch (type) {
-        case 'blink':
-            oscillator.frequency.value = 800;
-            gainNode.gain.value = 0.05;
-            oscillator.start();
-            oscillator.stop(ctx.currentTime + 0.05);
-            break;
-        case 'break':
-            oscillator.frequency.value = 440;
-            gainNode.gain.value = 0.2;
-            oscillator.start();
-            setTimeout(() => oscillator.frequency.value = 550, 200);
-            setTimeout(() => oscillator.frequency.value = 660, 400);
-            oscillator.stop(ctx.currentTime + 0.6);
-            break;
-        case 'complete':
-            oscillator.frequency.value = 523;
-            gainNode.gain.value = 0.15;
-            oscillator.start();
-            setTimeout(() => oscillator.frequency.value = 659, 150);
-            setTimeout(() => oscillator.frequency.value = 784, 300);
-            oscillator.stop(ctx.currentTime + 0.5);
-            break;
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        switch (type) {
+            case 'blink':
+                oscillator.frequency.value = 800;
+                gainNode.gain.value = 0.05;
+                oscillator.start();
+                oscillator.stop(ctx.currentTime + 0.05);
+                break;
+            case 'break':
+                oscillator.frequency.value = 440;
+                gainNode.gain.value = 0.2;
+                oscillator.start();
+                setTimeout(() => oscillator.frequency.value = 550, 200);
+                setTimeout(() => oscillator.frequency.value = 660, 400);
+                oscillator.stop(ctx.currentTime + 0.6);
+                break;
+            case 'complete':
+                oscillator.frequency.value = 523;
+                gainNode.gain.value = 0.15;
+                oscillator.start();
+                setTimeout(() => oscillator.frequency.value = 659, 150);
+                setTimeout(() => oscillator.frequency.value = 784, 300);
+                oscillator.stop(ctx.currentTime + 0.5);
+                break;
+        }
+    } catch (error) {
+        console.error('Error playing sound:', error);
     }
 }
 
